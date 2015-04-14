@@ -31,14 +31,15 @@ int main(int argc, char **argv) {
   DescriptorComparator* comparator;
   comparator = new ManhattanComparator();
   std::string bins = argv[2];
-  extractor = new GrayHistogramExtractor(std::atoi(bins.c_str()));
   Descriptor* current;
   int skip = 23;
   int j=0;
   int end = 0;
   if (!capture.grab() || !capture.retrieve(frame))
-  	return 1;
+    return 1;
   cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+  std::cout << "total: " << gray.cols << "," << gray.rows << std::endl;
+  extractor = new GrayHistogramExtractor(std::atoi(bins.c_str()), gray.cols, gray.rows, 2, 2);
   current = extractor->extract(gray);
   for (;;) {
   	for(j = 0;!end && j < skip; j++){
