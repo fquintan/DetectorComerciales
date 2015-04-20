@@ -17,7 +17,6 @@ EdgeHistogramExtractor::EdgeHistogramExtractor(int h, int w) : heigth(h), width(
 EdgeHistogramExtractor::~EdgeHistogramExtractor(){}
 
 Descriptor* EdgeHistogramExtractor::extract(cv::Mat &image){
-
 	int n_filters = filters.size();
 	int histSize = n_filters * 16;
 	std::vector<int> histogram(histSize);
@@ -26,16 +25,19 @@ Descriptor* EdgeHistogramExtractor::extract(cv::Mat &image){
 	
 	int delta_x = width / 4;
 	int delta_y = heigth / 4;
-	int i, j;
+	int i, j, k;
+	int count = 0;
 	/*Compute histogram for each sector and concatenate them into a single vector*/
-	for(i = 0; i + delta_x < width; i += delta_x){
-		for(j = 0; j + delta_y < heigth; j += delta_y){
-			currentSectorHistogram = extractSectorHistogram(image, i, j, i + delta_x, j + delta_y);
-			histogram.insert( histogram.end(), currentSectorHistogram.begin(), currentSectorHistogram.end());
+	for(i = 0; i + delta_x - 1 < width; i += delta_x){
+		for(j = 0; j + delta_y - 1 < heigth; j += delta_y){
+			currentSectorHistogram = extractSectorHistogram(image, i, j, i + delta_x - 1, j + delta_y - 1);
+			for(k = 0; k < n_filters; k++){
+				histogram[count++] = currentSectorHistogram[k];
+			}
 		}
 	}
 	/*Normalize the histogram and return descriptor*/
-	int count = 0;
+	count = 0;
 	for(i = 0; i < histSize; i++){
 		count += histogram[i];
 	}
@@ -50,12 +52,14 @@ std::vector<int> EdgeHistogramExtractor::extractSectorHistogram(cv::Mat &image, 
 	int n_filters = filters.size();
 	std::vector<float> intensities(n_filters);
 	cv::Mat currentBlock, convResult;
-	std::vector<int> histogram(0, n_filters);
+	std::vector<int> histogram(n_filters, 0);
 
 	int i, j, k;
-	for(i = start_x; i + imageBlockSize < end_x; i += imageBlockSize){
-		for(j = start_y; j + imageBlockSize < end_y; j += imageBlockSize){
-	    	currentBlock = image(cv::Rect(10, 10, 100, 100));
+	int c = 0;
+	for(i = start_x; i + imageBlockSize - 1 < end_x; i += imageBlockSize){
+		for(j = start_y; j + imageBlockSize - 1 < end_y; j += imageBlockSize){
+	    	currentBlock = image(cv::Rect(i, j, imageBlockSize, imageBlockSize));
+	    	c++;
 	    	for(k = 0; k < n_filters; k++){
 			    cv::filter2D(currentBlock, convResult, -1 , filters[k], cv::Point( -1, -1 ), 0, cv::BORDER_DEFAULT);
 			    intensities[k] = computeIntensity(convResult);
@@ -72,16 +76,29 @@ float EdgeHistogramExtractor::computeIntensity(cv::Mat &block){
 	int cols = block.cols;
 	int i, j;
 	for(i = 0; i < rows; i++){
-		for (j = 0; i < cols; j++){
+		for (j = 0; j < cols; j++){
 			intensity += block.at<float>(i, j);
 		}
 	}
 	return intensity;
 }
 void EdgeHistogramExtractor::addToHistogram(std::vector<float> intensities, float threshold, std::vector<int> &histogram){
-	auto max = std::max_element(std::begin(intensities), std::end(intensities));
+	float max = 0.0;
+	int index = 0;
+	int i;
+	int size = intensities.size();
+	for(i = 0; i < size; i++){
+		if(intensities[i] > max){
+			max = intensities[i];
+			index = i;
+		}
+	}
+	if(max >= threshold){
+		histogram[index]++;
+	}
+/*	auto max = std::max_element(std::begin(intensities), std::end(intensities));
 	if(*max >= threshold){
 		int index = std::distance(std::begin(intensities), max);
 		histogram[index]++;
-	}
+	}*/
 }

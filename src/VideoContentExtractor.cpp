@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
   DescriptorExtractor* extractor;
   DescriptorComparator* comparator;
   comparator = new ManhattanComparator();
-  std::string bins = argv[2];
+  // std::string bins = argv[2];
   Descriptor* current;
   int skip = 23;
   int j=0;
@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
   if (!capture.grab() || !capture.retrieve(frame))
     return 1;
   cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+  
   std::cout << "total: " << gray.cols << "," << gray.rows << std::endl;
   // extractor = new GrayHistogramExtractor(std::atoi(bins.c_str()), gray.cols, gray.rows, 2, 2);
   extractor = new EdgeHistogramExtractor(gray.rows, gray.cols);
@@ -53,6 +54,7 @@ int main(int argc, char **argv) {
 
     Descriptor* d;
     d = extractor->extract(gray);
+  
     float distance = comparator->compare(current, d);
     std::cout << distance << std::endl;
 	delete current;
