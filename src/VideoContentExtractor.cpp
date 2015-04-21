@@ -1,8 +1,8 @@
 #include <iostream>
 #include <stdlib.h> 
 //#include "Descriptor.hpp"
-#include "GrayHistogramExtractor.hpp"
-#include "EdgeHistogramExtractor.hpp"
+#include "Utils.cpp"
+#include "ExtractorFactory.cpp"
 #include "EuclideanComparator.hpp"
 #include "ManhattanComparator.hpp"
 #include <opencv2/core/core.hpp>
@@ -41,8 +41,13 @@ int main(int argc, char **argv) {
   cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
   
   std::cout << "total: " << gray.cols << "," << gray.rows << std::endl;
+  std::vector<std::string> parameters;
+  parameters = Utils::split(argv[2], '_'); 
+  ExtractorFactory* factory = new ExtractorFactory(); 
   // extractor = new GrayHistogramExtractor(std::atoi(bins.c_str()), gray.cols, gray.rows, 2, 2);
-  extractor = new EdgeHistogramExtractor(gray.rows, gray.cols);
+  // extractor = new EdgeHistogramExtractor(gray.rows, gray.cols);
+  extractor = factory->createExtractor(parameters);
+  
   current = extractor->extract(gray);
   for (;;) {
   	for(j = 0;!end && j < skip; j++){
