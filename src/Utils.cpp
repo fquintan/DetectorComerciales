@@ -1,6 +1,14 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/dir.h>
+#include <stdexcept>
+
+
+#include <fcntl.h>
 
 class Utils{
 public:
@@ -14,4 +22,52 @@ public:
 		}
 		return elems;
 	}
+
+	static bool existsFile(std::string filename) {
+		struct stat st;
+		if (stat(filename.c_str(), &st) == 0)
+			return S_ISREG(st.st_mode) ? true : false;
+		return false;
+	}
+
+	static std::vector<std::string> getAllElementsInDir(std::string path) {
+		std::vector<std::string> list;
+	#if _WIN32
+		DIR *dp = opendir(path.c_str());
+		if (dp == NULL)
+			throw std::runtime_error("can't open " + path);
+		struct dirent *dir_entry;
+		while ((dir_entry = readdir(dp)) != NULL) {
+			char *name = dir_entry->d_name;
+			list.push_back(std::string(name));
+		}
+		closedir(dp);
+	#elif __linux
+		struct dirent **namelist = NULL;
+		int len = scandir(path.c_str(), &namelist, NULL, alphasort);
+		if (len < 0)
+			throw std::runtime_error("can't open " + path);
+		for (int i = 0; i < len; ++i) {
+			char *name = namelist[i]->d_name;
+			list.push_back(std::string(name));
+			free(namelist[i]);
+		}
+		free(namelist);
+	#endif
+		return list;
+	}
+	
+	static std::vector<std::string> getAllFilenames(std::string path) {
+		std::vector<std::string> list = getAllElementsInDir(path);
+		std::vector<std::string> file_list;
+		for (std::string fname : list) {
+			if (fname.compare(0, 1, ".") == 0) //archivos que comienzan por "."
+				continue;
+			std::string full_name = path + "/" + fname;
+			if (existsFile(full_name))
+				file_list.push_back(full_name);
+		}
+		return file_list;
+	}
+
 };
