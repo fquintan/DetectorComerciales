@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
     // extractor = new GrayHistogramExtractor(std::atoi(bins.c_str()), gray.cols, gray.rows, 2, 2);
     // extractor = new EdgeHistogramExtractor(gray.rows, gray.cols);
     extractor = factory->createExtractor(parameters);
-    myfile.open ("./descriptors/" + files[i] + ".des");
+    std::string descriptorFilename = "./descriptors/" + files[i] + ".des";
+    myfile.open(descriptorFilename);
     std::cout << "opened " << "./descriptors/" + files[i] + ".des" << std::endl;
 
     /*For test only, not needed in the actual program*/

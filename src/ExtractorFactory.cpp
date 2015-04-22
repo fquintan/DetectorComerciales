@@ -35,7 +35,8 @@ public:
 	}
 
 private:
-	int height;
+
 	int width;
+	int height;
 
 };

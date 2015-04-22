@@ -1,33 +1,43 @@
 #include "GrayHistogramExtractor.hpp"
 #include <iostream>
 
-GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int h, int v, int vzones, int hzones):
- bins(numberOfBins), zones_v(vzones), zones_h(hzones), height(v), width(h){
+GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int w, int h, int vzones, int hzones):
+ bins(numberOfBins), zones_v(vzones), zones_h(hzones), height(h), width(w){
+ 	// std::cout << "constructor"<< std::endl;
 	int zonas = zones_h * zones_v;
 	std::vector<cv::Mat> mascaras(zonas);
 	masks = mascaras;
 	cv::Mat mask;
 	int i, j;
-	int y = 0;
+	int x = 0;
 	int delta_h = width / zones_h;
 	int delta_v = height / zones_v;
+	// std::cout << "w,h: "<< width << "," << height << std::endl;
+	// std::cout << "zones h,v : "<< zones_h << "," << zones_v << std::endl;
+	// std::cout << "deltax,y: "<< delta_h << "," << delta_v << std::endl;
+
 	for (i = 0; i < zones_h; i++){
-		int x = 0;
+		int y = 0;
 		for (j = 0; j < zones_v; j++){
-			mask = cv::Mat::zeros(v, h, CV_8U); // all 0
+			// std::cout << "x, x+delta: "<< x << ", " << x+delta_h << std::endl;
+			// std::cout << "y, y+delta: "<< y << ", " << y+delta_v << std::endl;
+			mask = cv::Mat::zeros(height, width, CV_8U); // all 0
 			mask(cv::Rect(x, y, delta_h, delta_v)) = 1;
-			x += delta_h;
-			masks[i*zones_h + j] = mask;
+			y += delta_v;
+			// std::cout << "index: "<< (i*zones_v + j) << std::endl;
+			masks[i*zones_v + j] = mask;
 			// mask.copyTo(masks[i*zones_h + j]);
 		}
-		y += delta_v;
+		x += delta_h;
 	}
-	std::cout << "extractor w,h: " << width << "," << height << std::endl;
+	// std::cout << "extractor w,h: " << width << "," << height << std::endl;
 }
 
 GrayHistogramExtractor::~GrayHistogramExtractor(){}
 
 Descriptor* GrayHistogramExtractor::extract(cv::Mat &image){
+	// std::cout << "extract"<< std::endl;
+	
 	int cols = image.cols;
 	int rows = image.rows;
 	float total = (float) cols * rows;
