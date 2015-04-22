@@ -1,5 +1,6 @@
 #include "Descriptor.hpp"
 #include <sstream>
+#include "Utils.cpp"
 #include <stdlib.h> 
 
 
@@ -8,6 +9,19 @@
 */
 
 Descriptor::Descriptor(std::vector<float> v): vector(v){}
+
+Descriptor::Descriptor(std::string s){
+	std::vector<std::string> vectorAsString;
+	vectorAsString = Utils::split(s, ',');
+	int size = vectorAsString.size();
+	std::vector<float> v(size);
+	vector = v;
+	int i;
+	for(i = 0; i < size; i++){
+		vector[i] = std::stof(vectorAsString[i]);
+	}
+}
+
 Descriptor::~Descriptor(){}
 
 std::string Descriptor::toString(){
@@ -25,3 +39,5 @@ std::string Descriptor::toString(){
 	std::string str = ss.str();
 	return str;
 }
+
+

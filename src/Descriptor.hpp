@@ -11,6 +11,7 @@ class Descriptor{
 
 public:
 	Descriptor(std::vector<float> v);
+	Descriptor(std::string s);
 	~Descriptor();
 	std::string toString();
 
