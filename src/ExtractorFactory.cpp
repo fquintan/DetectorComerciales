@@ -6,35 +6,36 @@
 
 class ExtractorFactory{
 public:
-	ExtractorFactory(){}
+	ExtractorFactory(int w, int h): width(w), height(h){}
 
 	DescriptorExtractor* createExtractor(std::vector<std::string> parameters){
 		DescriptorExtractor* de;
 		if (parameters[0] == "EDGE"){
-			if (parameters.size() != 3) {
+			if (parameters.size() != 1) {
 				throw std::invalid_argument("Not enough arguments");
 			}
-			int a = std::stoi(parameters[1]);
-			int b = std::stoi(parameters[2]);
-			EdgeHistogramExtractor *edge = new EdgeHistogramExtractor(a, b);
+			EdgeHistogramExtractor *edge = new EdgeHistogramExtractor(height, width);
 			de = edge;
 		}
 		else if (parameters[0] == "GRAY"){
-			if (parameters.size() != 6) {
+			if (parameters.size() != 4) {
 				throw std::invalid_argument("Not enough arguments");
 			}
 			int bins = std::stoi(parameters[1]);
-			int w = std::stoi(parameters[2]);
-			int h = std::stoi(parameters[3]);
-			int vzones = std::stoi(parameters[4]);
-			int hzones = std::stoi(parameters[5]);
-			GrayHistogramExtractor *gray = new GrayHistogramExtractor(bins, w, h, vzones, hzones);
+			int vzones = std::stoi(parameters[2]);
+			int hzones = std::stoi(parameters[3]);
+
+			GrayHistogramExtractor *gray = new GrayHistogramExtractor(bins, width, height, vzones, hzones);
 			de = gray;
 		}
 		else{
 			throw std::invalid_argument("Not enough arguments");
 		}
-
 		return de;
-	}	
+	}
+
+private:
+	int height;
+	int width;
+
 };

@@ -2,7 +2,7 @@
 #include <iostream>
 
 GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int h, int v, int vzones, int hzones):
- bins(numberOfBins), zones_v(vzones), zones_h(hzones), heigth(v), width(h){
+ bins(numberOfBins), zones_v(vzones), zones_h(hzones), height(v), width(h){
 	int zonas = zones_h * zones_v;
 	std::vector<cv::Mat> mascaras(zonas);
 	masks = mascaras;
@@ -10,7 +10,7 @@ GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int h, int v, i
 	int i, j;
 	int y = 0;
 	int delta_h = width / zones_h;
-	int delta_v = heigth / zones_v;
+	int delta_v = height / zones_v;
 	for (i = 0; i < zones_h; i++){
 		int x = 0;
 		for (j = 0; j < zones_v; j++){
@@ -22,6 +22,7 @@ GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int h, int v, i
 		}
 		y += delta_v;
 	}
+	std::cout << "extractor w,h: " << width << "," << height << std::endl;
 }
 
 GrayHistogramExtractor::~GrayHistogramExtractor(){}

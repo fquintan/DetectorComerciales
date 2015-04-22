@@ -9,7 +9,7 @@ private:
 	int bins;
 	int zones_v;
 	int zones_h;
-	int heigth;
+	int height;
 	int width;
 	std::vector<cv::Mat> masks;
 };
