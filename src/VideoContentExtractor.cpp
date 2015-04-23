@@ -19,7 +19,7 @@ int openVideo(cv::VideoCapture &capture, std::string filename){
     capture.open(id_webcam);
   }
   if (!capture.isOpened()) {
-    std::cout << "no puedo abrir " << filename << std::endl;
+    // std::cout << "no puedo abrir " << filename << std::endl;
     return 0;
   }
   return 1;
