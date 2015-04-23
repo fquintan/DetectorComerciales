@@ -36,7 +36,7 @@ GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int w, int h, i
 GrayHistogramExtractor::~GrayHistogramExtractor(){}
 
 Descriptor* GrayHistogramExtractor::extract(cv::Mat &image){
-	// std::cout << "extract"<< std::endl;
+	std::cout << "extract"<< std::endl;
 	
 	int cols = image.cols;
 	int rows = image.rows;
