@@ -10,20 +10,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <fstream>
 
-int openVideo(cv::VideoCapture &capture, std::string filename){
-  std::cout << "abriendo video " << filename << std::endl;
-  capture.open(filename);
-  if (!capture.isOpened()) {
-    std::cout << "abriendo camara " << filename << std::endl;
-    int id_webcam = std::atoi(filename.c_str());
-    capture.open(id_webcam);
-  }
-  if (!capture.isOpened()) {
-    // std::cout << "no puedo abrir " << filename << std::endl;
-    return 0;
-  }
-  return 1;
-}
+
 
 int main(int argc, char **argv) {
 
@@ -45,7 +32,7 @@ int main(int argc, char **argv) {
     std::cout << "file: " << files[i] << std::endl;
     int end = 0;
 
-    openVideo(capture, files[i]);
+    Utils::openVideo(capture, files[i]);
 
     cv::Mat frame, gray;
     DescriptorExtractor* extractor;

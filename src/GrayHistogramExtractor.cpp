@@ -36,7 +36,7 @@ GrayHistogramExtractor::GrayHistogramExtractor(int numberOfBins, int w, int h, i
 GrayHistogramExtractor::~GrayHistogramExtractor(){}
 
 Descriptor* GrayHistogramExtractor::extract(cv::Mat &image){
-	std::cout << "extract"<< std::endl;
+	// std::cout << "extract"<< std::endl;
 	
 	int cols = image.cols;
 	int rows = image.rows;
@@ -51,7 +51,7 @@ Descriptor* GrayHistogramExtractor::extract(cv::Mat &image){
 	std::vector<float> f_hist(bins * zones, 0.0);
 
     for (j = 0; j < zones; j++){
-	    cv::calcHist( &image, 1, channels, masks[j], // do not use mask
+	    cv::calcHist( &image, 1, channels, masks[j], 
 	             hist, 1, histSize, ranges,
 	             true, // the histogram is uniform
 	             false );

@@ -6,12 +6,30 @@
 #include <sys/stat.h>
 #include <sys/dir.h>
 #include <stdexcept>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 
 #include <fcntl.h>
 
 class Utils{
 public:
+
+	static int openVideo(cv::VideoCapture &capture, std::string filename){
+		std::cout << "abriendo video " << filename << std::endl;
+		capture.open(filename);
+		if (!capture.isOpened()) {
+			std::cout << "abriendo camara " << filename << std::endl;
+			int id_webcam = std::atoi(filename.c_str());
+			capture.open(id_webcam);
+		}
+		if (!capture.isOpened()) {
+			// std::cout << "no puedo abrir " << filename << std::endl;
+			return 0;
+		}
+			return 1;
+		}
 	static std::vector<std::string> split(std::string string, const char delim) {
 		std::vector<std::string> elems;
 		std::stringstream ss(string);
