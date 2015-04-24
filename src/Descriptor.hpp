@@ -10,6 +10,7 @@ class Descriptor{
 
 
 public:
+	Descriptor();
 	Descriptor(std::vector<float> v);
 	Descriptor(std::string s);
 	~Descriptor();

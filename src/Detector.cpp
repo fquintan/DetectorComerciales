@@ -11,71 +11,102 @@
 #include "EuclideanComparator.hpp"
 #include "ExtractorFactory.cpp"
 
+void writeMatchFound(std::ofstream &of, int indexStart, int indexEnd, int fps, std::string videoName){
+	int startTime = (indexStart / fps);
+	int endTime = (indexEnd / fps); 
+	of << "vlc " << videoName << " --start-time " << startTime << " --stop-time " << endTime << " --repeat\n"; 
+}
+
+int loadBatch(std::vector<Descriptor> &v, int batchSize, std::ifstream* in){
+	Descriptor* current;
+	int count = 0;
+	std::string descriptorAsString;
+	std::string line;
+	while (std::getline(*in, line)){
+		    std::istringstream iss(line);
+		    iss >> descriptorAsString;
+		    current = new Descriptor(descriptorAsString);
+		    v[count] = *current;
+		    count++;
+		    if(count >= batchSize){break;}
+	}
+	return count;
+}
+
 
 int main(int argc, char **argv) {
-	std::cout << "holi" <<  std::endl;
 
+	/*System paramenters*/
 	int FPS = 5;
-	int skip = (30 / FPS) - 1;
+	int BATCH_SIZE = 1000;
+	int lengthThreshold = 10;
 
-	std::string dirName = argv[1];
-	std::vector<std::string> files = Utils::getAllFilenames(dirName);
+	std::ofstream output;
+	std::string outName = argv[3];
+	output.open(outName);
+    
+  
+
+	std::string shortsDirName = argv[1];
+	std::vector<std::string> filesShorts = Utils::getAllFilenames(shortsDirName);
 	
 	std::vector<Descriptor> descriptors;
 	std::string descriptorAsString;
 	Descriptor* current;
 	std::string line;
-	for(std::string file : files){
-		std::ifstream infile(file);
+	std::ifstream infile;
+	for(std::string file : filesShorts){
+		infile.open(file);
 		while (std::getline(infile, line)){
 		    std::istringstream iss(line);
 		    iss >> descriptorAsString;
 		    current = new Descriptor(descriptorAsString);
 		    descriptors.push_back(*current);
 		}
+		infile.close();
+		
 	}
-	std::cout << descriptors.size() << " descriptors loaded" <<  std::endl;
+	std::cout << descriptors.size() << " descriptors loaded from shorts" <<  std::endl;
+	std::string longVideoFile = argv[2];
+
 	EuclideanComparator* comp;
 	comp = new EuclideanComparator();
 	BruteForceNNF nnf(descriptors, comp);
+	infile.open(longVideoFile);
 
-    std::vector<std::string> parameters;
-    parameters = Utils::split(argv[3], '_'); 
+	int currentFoundIndex;
+	int currentIndex = 0;
+	int lastFoundIndex;
+	int currentRunLength;
 
-	cv::Mat frame, gray;
-	cv::VideoCapture capture;
-  	std::string filename = argv[2];
-	Utils::openVideo(capture, filename);
-	if (!capture.grab() || !capture.retrieve(frame)){
-			return 1;
-	}
-	int width = frame.cols;
-	int height = frame.rows;
-
-	DescriptorExtractor* extractor;
-	ExtractorFactory* factory = new ExtractorFactory(width, height); 
-    extractor = factory->createExtractor(parameters);
-
-	int foundIndex;
-	int end = 0;
-	int j;
-	for (;;) {
-		if (!capture.grab() || !capture.retrieve(frame)){
-			break;
+	int start = -2;
+	bool reachedEndOfFile = false;
+	int elementsLeft;
+	int i;
+	std::vector<Descriptor> longVideoDescriptors(BATCH_SIZE);
+	while (!reachedEndOfFile) {
+		elementsLeft = loadBatch(longVideoDescriptors, BATCH_SIZE, &infile);
+		if (elementsLeft < BATCH_SIZE){
+			reachedEndOfFile = true;
 		}
-		cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
-		Descriptor* d;
-		d = extractor->extract(gray);
-
-		foundIndex = nnf.find(d);
-		std::cout << "found index: " << foundIndex << std::endl; 
-		/*Skip a set amount of frames, it reaches the end, break*/
-		for(j = 0;!end && j < skip; j++){
-			if (!capture.grab() || !capture.retrieve(frame))
-			end = 1;
+		for(i = 0; i < elementsLeft; i++){
+			currentIndex++;
+			currentFoundIndex = nnf.find(&longVideoDescriptors[i]);
+			if(currentFoundIndex == lastFoundIndex + 1){
+				currentRunLength++;
+			}
+			else{
+				if (currentRunLength >= lengthThreshold){
+					writeMatchFound(output, start, currentIndex, FPS, longVideoFile);
+				}
+				start = currentIndex;
+				currentRunLength = 0;
+			}
+			lastFoundIndex = currentFoundIndex;
 		}
-		if(end){break;}
 	}
+	output.close();
+
 
 }

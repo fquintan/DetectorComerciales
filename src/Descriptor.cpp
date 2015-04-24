@@ -7,6 +7,7 @@
 /**
 	Represents a descriptor as a float vector
 */
+Descriptor::Descriptor(){}
 
 Descriptor::Descriptor(std::vector<float> v): vector(v){}
 
