@@ -37,9 +37,12 @@ int main(int argc, char **argv) {
   cv::VideoCapture capture;
   std::vector<std::string> files = Utils::getAllFilenames(dirName);
   int numberOfFiles = files.size();
+  for(std::string file : files){
+    std::cout << file << std::endl;
+  }
   int i;
   for (i = 0; i < numberOfFiles; i++){
-
+    std::cout << "file: " << files[i] << std::endl;
     int end = 0;
 
     openVideo(capture, files[i]);
@@ -71,8 +74,9 @@ int main(int argc, char **argv) {
 
     /*For test only, not needed in the actual program*/
     for (;;) {
-      if (!capture.grab() || !capture.retrieve(frame))
-      return 1;
+      if (!capture.grab() || !capture.retrieve(frame)){
+        break;
+      }
       count++;
       cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
