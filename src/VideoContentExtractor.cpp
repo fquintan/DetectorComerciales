@@ -55,16 +55,20 @@ int main(int argc, char **argv) {
     // extractor = new GrayHistogramExtractor(std::atoi(bins.c_str()), gray.cols, gray.rows, 2, 2);
     // extractor = new EdgeHistogramExtractor(gray.rows, gray.cols);
     extractor = factory->createExtractor(parameters);
-    std::string descriptorFilename = "./descriptors/" + files[i] + ".des";
+    std::string descriptorDirName = argv[3];
+    std::string descriptorFilename = descriptorDirName + files[i] + ".des";
     myfile.open(descriptorFilename);
-    std::cout << "opened " << "./descriptors/" + files[i] + ".des" << std::endl;
+    std::cout << "opened " << descriptorFilename << std::endl;
 
-    /*For test only, not needed in the actual program*/
     for (;;) {
       if (!capture.grab() || !capture.retrieve(frame)){
         break;
       }
       count++;
+      if(count % 1000 == 0){
+        std::cout << "Extracted " << count << " descriptors" << std::endl;
+      }
+
       cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
 
       Descriptor* d;
@@ -75,7 +79,6 @@ int main(int argc, char **argv) {
       for(j = 0;!end && j < skip; j++){
         if (!capture.grab() || !capture.retrieve(frame))
           end = 1;
-        count++;
       }
       if(end){break;}
     }
