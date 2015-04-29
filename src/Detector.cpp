@@ -53,14 +53,16 @@ int main(int argc, char **argv) {
 	int BATCH_SIZE = 1000;
 	int lengthThreshold = 20;
 	float distanceThreshold = 0.001;
+	int toleratedFailures = 2;
 	int limit = std::stoi(argv[4]);
 
+	/*File to write results*/
 	std::ofstream output;
 	std::string outName = argv[3];
 	output.open(outName);
     
   
-
+	/*Files containing the comercial's descriptors*/
 	std::string shortsDirName = argv[1];
 	std::vector<std::string> filesShorts = Utils::getAllFilenames(shortsDirName);
 	
@@ -91,57 +93,104 @@ int main(int argc, char **argv) {
 	std::cout << descriptors.size() << " descriptors loaded from shorts" <<  std::endl;
 	std::string longVideoFile = argv[2];
 
+	/*Initializing the nearest neighbor finder*/
 	EuclideanComparator* comp;
 	comp = new EuclideanComparator();
 	BruteForceNNF nnf(descriptors, comp);
 	infile.open(longVideoFile);
 
-	int currentFoundIndex;
-	int currentIndex = 0;
-	int currentRunLength = 0;
-
-	int start = -2;
-	bool reachedEndOfFile = false;
-	int elementsLeft;
-	int count = 0;
-	int lastComercial = -1; 
-	int currentComercial;
-	float distance;
+	std::vector<int> nearestComercials;
 	std::vector<Descriptor> longVideoDescriptors(BATCH_SIZE);
+
+	float distance;
+	int elementsLeft;
+	int nearestIndex;
+	bool reachedEndOfFile = false;
+	int currentComercial;
+	int count = 0;
+	
+	/*
+	For every descriptor in the long file find the index of the nearest comercial frame
+	if that frame is close enough, the id of the corresponding comercial is saved
+	otherwise save -1
+	*/
+	std::cout << "Computing nearest neighbors for all descriptors" << std::endl;
+
 	while (!reachedEndOfFile) {
 		elementsLeft = loadBatch(longVideoDescriptors, BATCH_SIZE, &infile);
 		if (elementsLeft < BATCH_SIZE){
 			reachedEndOfFile = true;
 		}
-
 		for(i = 0; i < elementsLeft; i++){
-			currentIndex++;
-			currentFoundIndex = nnf.find(&longVideoDescriptors[i]);
-			distance = comp->compare(&longVideoDescriptors[i], &descriptors[currentFoundIndex]);
+			nearestIndex = nnf.find(&longVideoDescriptors[i]);
+			distance = comp->compare(&longVideoDescriptors[i], &descriptors[nearestIndex]);
 			if(distance <= distanceThreshold){
-				currentComercial = identifyComercial(comercials, currentFoundIndex);
+				currentComercial = identifyComercial(comercials, nearestIndex);
 			}
 			else{
 				currentComercial = -1;
 			}
-			if(currentComercial == lastComercial && currentComercial != -1){
-				currentRunLength++;
-			}
-			else{
-				if ( lastComercial != -1 && currentRunLength >= (comercialLengths[lastComercial] * 0.8) ){
-					writeMatchFound(output, start, currentIndex, FPS, comercialNames[lastComercial]);
-				}
-				start = currentIndex;
-				currentRunLength = 0;
-			}
-			lastComercial = currentComercial;
+			nearestComercials.push_back(currentComercial);
 		}
 		count += elementsLeft;
-		std::cout << "Analized " << count << " descriptors" << std::endl;
+		std::cout << count << " Descriptors analyzed" << std::endl;
 		if(count >= limit){
 			reachedEndOfFile = true;
 		}
 	}
+
+	/*Finished computing nearest neighbors now we examine the matches to find comercials*/
+
+	int failures = 0;
+	int lastComercial = -1;
+	int currentComercialLength = 0;
+	bool currentlyInsideRun = false;
+	int startIndex;
+	int currentIndex = 0;
+	int comercialsFound = 0;
+
+	std::cout << "Searching for matching comercials" << std::endl;
+
+	for(int current : nearestComercials){
+		if(currentlyInsideRun){
+			if(current != lastComercial){
+				failures++;
+				if(failures > toleratedFailures){
+					/*check if the current run length is at least 90% of the corresponding comercial*/
+					currentComercialLength = currentIndex - startIndex;
+					if(currentComercialLength >= comercialLengths[lastComercial] * 0.9){
+						/*Write the result to file, otherwise discard run and continue*/
+						writeMatchFound(output, startIndex, currentIndex, FPS, comercialNames[lastComercial]);
+						comercialsFound++;
+						currentlyInsideRun = false;
+						failures = 0;
+
+					}
+					else{
+						currentlyInsideRun = false;
+						failures = 0;
+					}
+				}
+			}
+			else{
+			/*if the current comercial is the same as before reset the failure counter and continue the current run*/
+				failures = 0;
+			}
+		}
+		else{
+			if(current != -1){
+				lastComercial = current;
+				failures = 0;
+				startIndex = currentIndex;
+				currentlyInsideRun = true;
+			}
+		}
+		currentIndex++;
+		if(currentIndex % 1000 == 0){
+			std::cout << "Analyzed " << currentIndex << " frames, comercials found: " << comercialsFound << std::endl;
+		}
+	}
+
 	output.close();
 
 

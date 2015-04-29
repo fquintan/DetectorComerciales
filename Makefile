@@ -60,6 +60,9 @@ BUILD_DIR := build
 EXE_CPP   := $(BUILD_DIR)/Detector$(SUFFIX_EXE)
 # CPP_FILES := $(wildcard src/*.cpp)
 CPP_FILES=BruteForceNNF.cpp DescriptorComparator.cpp Descriptor.cpp DescriptorExtractor.cpp EdgeHistogramExtractor.cpp EuclideanComparator.cpp ExtractorFactory.cpp GrayHistogramExtractor.cpp ManhattanComparator.cpp NearestNeighborFinder.cpp Utils.cpp
+# CPP_FILES := $(wildcard src/*.cpp)
+CPP_FILES := $(filter-out VideoContentExtractor.cpp, $(CPP_FILES))
+CPP_FILES := $(filter-out Detector.cpp, $(CPP_FILES))
 EXTRACTOR_SRC=VideoContentExtractor.cpp
 DETECTOR_SRC=Detector.cpp
 
