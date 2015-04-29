@@ -1,5 +1,7 @@
  #!/bin/bash
 
+mkdir results
+
 time ./detector gray_32_3_3/videos/comerciales gray_32_3_3/videos/mega-2014_04_20T21_59_53.mp4.des results/gray_32_3_3.txt 100000
 
 echo gray_32_3_3
