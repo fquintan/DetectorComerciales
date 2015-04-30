@@ -12,10 +12,10 @@
 #include "ExtractorFactory.cpp"
 
 void writeMatchFound(std::ofstream &of, int indexStart, int indexEnd, int fps, std::string videoName){
-	int startTime = (indexStart / fps);
-	int endTime = (indexEnd / fps); 
+	int startTime = (int)(indexStart / 4.995);
+	int endTime = (int)(indexEnd / 4.995); 
 	std::string name = "videos/mega-2014_04_20T21_59_53.mp4";
-	of << "comercial " << videoName << "\n"; 
+	of << "comercial " << videoName << " #### "; 
 	of << "vlc " << name << " --start-time " << startTime << " --stop-time " << endTime << " --repeat\n"; 
 }
 
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	int FPS = 5;
 	int BATCH_SIZE = 1000;
 	int lengthThreshold = 20;
-	float distanceThreshold = 0.001;
+	float distanceThreshold = 0.002;
 	int toleratedFailures = 2;
 	int limit = std::stoi(argv[4]);
 
@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
 			else{
 				currentComercial = -1;
 			}
+			// std::cerr << currentComercial << std::endl;
 			nearestComercials.push_back(currentComercial);
 		}
 		count += elementsLeft;

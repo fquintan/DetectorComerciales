@@ -49,7 +49,6 @@ endif
 
 
 ########## rules ##########
-
 SOURCE_DIR := src
 SOURCE_CPP := $(SOURCE_DIR)/VideoContentExtractor.cpp
 # SOURCE_CPP := $(SOURCE_DIR)/VideoContentExtractor.cpp
@@ -82,7 +81,12 @@ extractor: $(OBJ_FILES) $(EXTRACTOR_OBJ)
 	# g++ -std=c++0x $(CFLAGS) -o $(EXE_CPP) $(SOURCE_CPP) $(LDFLAGS)
 
 obj/%.o: src/%.cpp
+	mkdir -p obj
 	g++ -std=c++0x $(CFLAGS) -c -o $@ $<
+
+obj:
+	mkdir -p obj
+
 
 clean:
 	rm obj/* extractor detector
